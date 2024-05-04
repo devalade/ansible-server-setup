@@ -1,0 +1,21 @@
+[server]
+192.168.0.20
+
+[all:vars]
+ansible_ssh_user=root
+ansible_ssh_private_key_file="~/.ssh/id_rsa"
+
+hostname="SERVER_NAME"
+deployment_user="USER_NAME"
+ssh_port=22222
+disable_root=true
+
+# Node Exporter
+node_exporter=false
+node_exporter_version='1.2.2'
+
+# Promtail
+promtail=false
+promtail_version='2.4.1'
+promtail_monitor='http://192.168.0.0:3100'
+promtail_name=something

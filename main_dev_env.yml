@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: no
+  become: true
+  roles:
+    - install_nginx
+    - install_cerbot
+    - install_node

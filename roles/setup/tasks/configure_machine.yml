@@ -1,0 +1,35 @@
+---
+- name: change hostname
+  hostname:
+    name: '{{ hostname }}'
+
+- name: Update Timezone to my time
+  shell: 'timedatectl set-timezone America/Los_Angeles'
+  changed_when: false
+
+- name: Update file limits for user
+  blockinfile:
+    path: /etc/security/limits.conf
+    insertbefore: '# End of file'
+    marker: '# {mark} ANSIBLE MANAGED BLOCK'
+    block: |
+      {{ deployment_user }} soft nofile 1048576
+      {{ deployment_user }} hard nofile 1048576
+      {{ deployment_user }} soft nproc 1048576
+      {{ deployment_user }} hard nproc 1048576
+
+- name: Set governor as performance
+  template:
+    src: cpufrequtils.j2
+    dest: '/etc/default/cpufrequtils'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: start cpufrequtils service
+  systemd:
+    name: cpufrequtils
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  changed_when: false

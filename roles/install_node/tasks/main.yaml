@@ -1,0 +1,30 @@
+---
+- name: Install specific Node.js version and npm
+
+  block:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+
+    - name: install node.js
+      apt:
+        name: nodejs
+        state: present
+
+    - name: install node.js
+      apt:
+        name: npm
+        state: present
+
+    - name: Install n
+      command: npm install -g n
+
+    - name: Install node {{ node_version }} with n
+      command: n {{ node_version }}
+
+    - name: Install pnpm
+      command: npm install -g pnpm
+    
+    - name: Install pm2 
+      command: npm install -g pm2
+      # No separate installation needed for npm, it comes with Node.js

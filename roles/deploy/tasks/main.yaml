@@ -1,0 +1,22 @@
+---
+- name: Deploy application with dynamic Nginx configuration
+  vars:
+    # Load variables from the separate file
+    vars_files:
+      - nginx_vars.yml
+
+  block:
+    # Template for Nginx configuration file
+    - name: Generate Nginx configuration
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    # Reload Nginx to apply the new configuration
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded

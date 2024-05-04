@@ -1,0 +1,17 @@
+---
+- name: Install essentials
+  apt:
+    name:
+      - net-tools
+      - ncdu
+      - vnstat
+      - tree
+      - htop
+      - zip
+      - git
+      - ufw
+      - jq
+      - bash-completion
+      - cpufrequtils
+    state: latest
+    update_cache: true

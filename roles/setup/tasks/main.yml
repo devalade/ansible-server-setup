@@ -1,0 +1,23 @@
+---
+- name: Create users
+  import_tasks: create_users.yml
+
+- name: Install essentials
+  import_tasks: install_essentials.yml
+
+- name: Configure Machine
+  import_tasks: configure_machine.yml
+
+- name: Create Aliases
+  import_tasks: create_aliases.yml
+
+- name: Update machine
+  import_tasks: update_machine.yml
+
+- name: Install node exporter
+  import_tasks: install_node_exporter.yml
+  when: node_exporter|default(false)|bool == true
+
+- name: Install promtail
+  import_tasks: install_promtail.yml
+  when: promtail|default(false)|bool == true

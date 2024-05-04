@@ -1,0 +1,19 @@
+- name: Install and link Certbot
+  block:
+    - name: Install snap
+      apt:
+        name: snapd
+        state: present
+  
+     # Install classic snap for certbot
+    - name: Install certbot snap (classic mode)
+      snap:
+        name: certbot
+        classic: yes
+
+    # Create symbolic link for certbot
+    - name: Link certbot to /usr/bin
+      file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
