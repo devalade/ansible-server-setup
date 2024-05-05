@@ -1,0 +1,90 @@
+---
+# Note: You will have to adjust this config if you want to deploy multiple apps at the same time
+- name: Define variables for deployment
+  vars:
+    project_name: "your-project-name"  # Replace with your project name
+    repo_url: "https://your_repo_url.git"  # Replace with your repository URL
+    env_file: "env.production"  # Replace if your env file has a different name
+    pm2_config_template: "pm2.config.j2.jinja"  # Replace if your template has a different name (optional)
+    nginx_config_template: "nginx.conf.j2.jinja"  # Replace if your template has a different name (optional)
+    domain_name: "yourdomain.com"  # Replace with your domain name
+    email_address: "your_email@example.com"  # Replace with your email address
+    webroot_path: "/path/to/project/build"  # Replace with the path to your build folder
+    app_script: "./your-app/build/server.js"  # Replace with your app script path
+
+# Playbook definition
+- name: Deploy React App
+  hosts: all
+  become: true
+
+  tasks:
+  - name: Pull project to specific folder
+    git:
+      repo: "{{ repo_url }}"
+      dest: "/path/to/project"
+
+  - name: Install dependencies
+    npm:
+      path: "/path/to/project"
+      state: present
+
+  - name: Build for production
+    npm:
+      path: "/path/to/project"
+      command: run build
+
+  - name: Copy env file
+    copy:
+      src: "{{ env_file }}"
+      dest: "/path/to/project/.env"
+
+  - name: Append new app configuration to PM2 config
+    lineinfile:
+      path: /etc/pm2/config/ecosystem.config.js
+      backrefs: yes
+      create: yes
+      line: " - { name: '{{ project_name }}', script: '{{ app_script }}' }"
+      state: present
+  
+  - name: Restart PM2
+    service:
+      name: pm2
+      state: restarted
+
+  - name: Add Nginx config
+    template:
+      src: "{{ nginx_config_template }}"  # Use template if desired
+      dest: /etc/nginx/sites-available/{{ project_name }}.conf
+      owner: root
+      group: root
+      mode: 0644
+
+    notify:
+      - reload nginx
+
+  - name: Enable Nginx config
+    file:
+      src: /etc/nginx/sites-available/{{ project_name }}.conf
+      dest: /etc/nginx/sites-enabled/{{ project_name }}.conf
+      state: link
+
+  - name: Install certbot
+    apt:
+      name: certbot python3-certbot-nginx
+      state: present
+
+  - name: Obtain SSL certificate (modify to your domain)
+    certbot:
+      cert_name: "{{ domain_name }}"
+      agree-tos: yes
+      email: "{{ email_address }}"
+      nginx_server_name: "{{ domain_name }}"
+      nginx_webroot: "{{ webroot_path }}"  # Assuming build folder contains static assets
+      expand_vars: true
+
+  handlers:
+  - name: reload nginx
+    service:
+      name: nginx
+      state: reloaded
+
